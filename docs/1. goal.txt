@@ -1,0 +1,47 @@
+Project 2: Mini System Design Project – URL Shortener or Expense Splitter
+
+Choose one. Both test backend fundamentals companies care about.
+
+What it is
+
+A service like bit.ly that converts long URLs into short links.
+
+What it demonstrates
+
+API design
+
+Databases
+
+Hashing / unique ID generation
+
+Scalability thinking (huge bonus)
+
+Core Features
+
+Shorten long URLs
+
+Redirect to original URL
+
+Click count analytics
+
+Expiration date for links
+
+Tech Stack
+
+Backend: Node.js / Java / Python
+
+DB: Redis + PostgreSQL (or just PostgreSQL)
+
+API: REST
+
+Deployment: Docker + cloud
+
+Stretch Ideas
+
+Rate limiting
+
+Custom aliases
+
+Basic caching
+
+System design diagram in README

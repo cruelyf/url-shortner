@@ -1,0 +1,78 @@
+1. What is this system and what does it do?
+
+- This is a URL shortener system which takes user's long URL input and turn into a short URL.
+- The user can track the how many clicks it received and when.
+- The user will have a simple dashboard to track the analytics.
+
+2. FEATURES
+
+CORE FEATURES
+-------------
+
+- Create a short URL
+- Redirect to original URL
+- Count Clicks
+- Expiration
+
+STRETCH FEATURES
+----------------
+
+- Custom Alias
+- Rate Limiting
+- Analytics
+- Caching
+
+3. DESIGN APIs 
+--------------
+
+How will users create a short URL?
+- They send a request with long URL.
+- System responds with a short URL.
+
+How will someone use a short URL?
+- They visit the short URL.
+- System redirects them.
+
+POST /shorten
+input: long URL
+output: short URL
+
+GET /{short_url} 
+action: redirect to original URL
+
+GET /analytics/{short_url}
+output: click count and metadata
+
+4. Choose Base62 ID Strategy
+----------------------------
+
+How do I create short, unique link?
+- I will use database auto-increment IDs and convert them to base62 for short codes.
+
+5. Choose PostgreSQL Schema
+---------------------------
+
+What data do i need to store?
+- short code
+- original URL
+- when it was created
+- when it will expire
+- click count
+
+URLs Table
+----------
+- short_url
+- long_url
+- created_at
+- expire_al
+- click_count
+
+6. Draw System Design
+---------------------
+
+User -> API Server -> Database
+
+
+
+
+

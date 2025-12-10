@@ -1,0 +1,273 @@
+Below is a clean, interview-ready mini system design for a URL Shortener (Bitly-like). You can turn this directly into a GitHub project.
+
+
+
+Summary
+
+We’ll build a REST-based URL shortener that:
+
+* Generates unique short links
+* Redirects users to original URLs
+* Tracks click counts
+* Supports expiration
+* Is scalable and production-minded
+
+
+
+ 1. Functional Requirements
+
+Core
+
+* Shorten a long URL
+* Redirect short URL → original URL
+* Track number of clicks
+* Support expiration date
+
+Stretch
+
+* Custom aliases
+* Rate limiting
+* Caching
+* Analytics endpoint
+
+
+
+ 2. Non-Functional Requirements
+
+* Low latency redirects (very important)
+* High read traffic
+* High availability
+* Horizontally scalable
+* Strong consistency for writes, eventual consistency for analytics
+
+
+
+ 3. High-Level Architecture
+
+
+Client
+  |
+  | HTTP
+  v
+API Service (Node.js / Java / Python)
+  |
+  |-- Redis (cache + rate limit)
+  |
+  |-- PostgreSQL (persistent storage)
+
+
+Redirect path must be fast → Redis first, DB fallback.
+
+
+
+ 4. API Design
+
+# Create Short URL
+
+POST /api/v1/shorten
+
+json
+{
+  "longUrl": "https://example.com/very/long/url",
+  "customAlias": "my-link",
+  "expiresAt": "2026-01-01T00:00:00Z"
+}
+
+
+Response
+
+json
+{
+  "shortUrl": "https://sho.rt/my-link"
+}
+
+
+
+
+# Redirect
+
+GET /{shortCode}
+
+* 302 Redirect to original URL
+* Increment click count asynchronously
+
+
+
+# Analytics
+
+GET /api/v1/analytics/{shortCode}
+
+json
+{
+  "longUrl": "...",
+  "clicks": 1234,
+  "createdAt": "...",
+  "expiresAt": "..."
+}
+
+
+
+
+ 5. Database Design (PostgreSQL)
+
+# `urls` table
+
+| Column      | Type        | Notes        |
+| -- | -- |  |
+| id          | BIGSERIAL   | PK           |
+| short_code  | VARCHAR(10) | Unique index |
+| long_url    | TEXT        |              |
+| created_at  | TIMESTAMP   |              |
+| expires_at  | TIMESTAMP   | nullable     |
+| click_count | BIGINT      |              |
+
+Indexes:
+
+* `short_code` (unique)
+* `expires_at`
+
+
+
+ 6. Short Code Generation
+
+# Option 1: Base62 Encoding (Recommended)
+
+* Use auto-increment ID
+* Encode ID using Base62 (`0-9a-zA-Z`)
+* Example:
+
+  
+  id = 125
+  shortCode = "cb"
+  
+
+Pros
+
+* Simple
+* No collisions
+* Short URLs
+
+
+
+# Option 2: Hashing (MD5/SHA)
+
+* Hash URL → take first N chars
+* Must handle collisions
+
+Not ideal for interviews unless explained carefully
+
+
+
+ 7. Redirect Flow (Critical Path)
+
+1. Client requests `GET /abc123`
+2. Check Redis:
+
+   * If found → redirect immediately
+3. If not found:
+
+   * Query PostgreSQL
+   * Store result in Redis with TTL
+4. Increment click count:
+
+   * Async (queue or fire-and-forget)
+
+
+
+ 8. Caching Strategy (Redis)
+
+Key
+
+
+short:{shortCode} → longUrl
+
+
+TTL
+
+* Match expiration date
+* Or fixed TTL (e.g., 24h)
+
+
+
+ 9. Expiration Handling
+
+* On redirect:
+
+  * Check `expires_at`
+  * If expired → return `410 Gone`
+* Optional:
+
+  * Background job to delete expired links
+
+
+
+ 10. Rate Limiting (Stretch)
+
+Redis-based
+
+
+rate:{ip} → counter
+
+
+* Limit: e.g., 10 requests/min
+* Use sliding window or token bucket
+
+
+
+ 11. Scalability Notes (Interview Gold)
+
+* Stateless API → horizontal scaling
+* Read-heavy workload → Redis cache
+* DB read replicas for analytics
+* Async click counting via queue (Kafka / SQS)
+* CDN for redirect endpoint (optional)
+
+
+
+ 12. Deployment
+
+* Dockerize API
+* Use:
+
+  * AWS / GCP / Azure
+  * Managed PostgreSQL
+  * Managed Redis
+* Environment-based configs
+
+
+
+ 13. README Diagram (ASCII)
+
+
+User
+ |
+ v
+Load Balancer
+ |
+ v
+URL Shortener API
+ |        |
+ v        v
+Redis   PostgreSQL
+
+
+
+
+ 14. What This Demonstrates (Interview)
+
+* Clean API design
+* Data modeling
+* Tradeoffs (hashing vs encoding)
+* Caching strategy
+* Scalability thinking
+
+
+
+If you want, I can next:
+
+* Write the actual Node.js / Python implementation
+* Draw a proper system design diagram
+* Convert this into interview talking points
+* Help you package it as a portfolio project
+
+Just tell me.

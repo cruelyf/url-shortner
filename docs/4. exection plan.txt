@@ -1,0 +1,220 @@
+Below is a practical, day-by-day execution plan you can follow exactly.
+It assumes ~1–2 focused hours per day and ends with a polished, interview-ready project.
+
+---
+
+Day 1 — Problem Clarity & System Design
+
+Goal: Know exactly what you’re building before writing code.
+
+Tasks
+
+ Write a 3–4 line problem statement
+ List core + stretch features
+ Design APIs (endpoints, request/response)
+ Choose:
+
+   Base62 ID strategy
+   PostgreSQL schema
+ Draw system design (even rough)
+
+Deliverables
+
+ API spec (text)
+ DB schema
+ Architecture diagram (hand-drawn or ASCII)
+
+---
+
+Day 2 — Project Setup & DB Schema
+
+Goal: Strong foundation.
+
+Tasks
+
+ Initialize backend project
+ Setup env config
+ Create PostgreSQL schema
+ Connect DB to app
+ Test DB insert & read
+
+Deliverables
+
+ Running server
+ URLs table created
+ DB connectivity confirmed
+
+---
+
+Day 3 — Short URL Creation API
+
+Goal: Generate short URLs.
+
+Tasks
+
+ Validate long URLs
+ Insert URL into DB
+ Generate Base62 short code
+ Return short URL
+
+Deliverables
+
+ `POST /shorten` working
+ Unit test or curl test
+
+---
+
+Day 4 — Redirect Logic (Critical Path)
+
+Goal: Fast and correct redirects.
+
+Tasks
+
+ Implement `GET /{shortCode}`
+ Fetch original URL
+ Handle missing links
+ Handle expiration
+ Return 302 redirect
+
+Deliverables
+
+ Short link works in browser
+ Correct error responses
+
+---
+
+Day 5 — Click Tracking & Analytics
+
+Goal: Visibility into usage.
+
+Tasks
+
+ Increment click count
+ Add analytics endpoint
+ Return metadata
+
+Deliverables
+
+ Clicks increase correctly
+ `GET /analytics/{shortCode}` works
+
+---
+
+Day 6 — Redis Caching
+
+Goal: Production-level performance.
+
+Tasks
+
+ Setup Redis
+ Cache shortCode → longUrl
+ Read-through cache logic
+ TTL aligned with expiration
+
+Deliverables
+
+ Redirect hits Redis first
+ Reduced DB queries
+
+---
+
+Day 7 — Expiration & Cleanup
+
+Goal: Robust link lifecycle.
+
+Tasks
+
+ Enforce expiration on redirect
+ Return 410 for expired links
+ Optional cleanup job
+
+Deliverables
+
+ Expired links blocked
+ Clear behavior documented
+
+---
+
+Day 8 — Stretch Features
+
+Goal: Stand out.
+
+Pick 1–2:
+
+ Custom aliases
+ Rate limiting
+ Async click counting
+ Basic authentication
+
+Deliverables
+
+ Feature implemented cleanly
+ No core logic breakage
+
+---
+
+Day 9 — Docker & Deployment
+
+Goal: Make it real.
+
+Tasks
+
+ Dockerize app
+ Setup env variables
+ Deploy to cloud
+ Test public endpoint
+
+Deliverables
+
+ Public URL working
+ Dockerfile committed
+
+---
+
+Day 10 — README & Interview Prep
+
+Goal: Convert project into proof of skill.
+
+Tasks
+
+ Write clean README
+ Add system diagram
+ Document tradeoffs
+ Prepare explanation answers
+
+Deliverables
+
+ Professional GitHub repo
+ Confident system explanation
+
+---
+
+Final Success Checklist
+
+You are done when:
+
+ Short links work end-to-end
+ Redirects are fast
+ Cache + DB are used correctly
+ README explains why, not just what
+ You can explain the system without notes
+
+---
+
+Time Compression Option
+
+If short on time:
+
+ 5-day version: Days 1–5 + Redis + README
+ 3-day version: MVP + design + explanation
+
+---
+
+If you want next, I can:
+
+ Turn this into a daily coding checklist
+ Create a GitHub README template
+ Do a mock system design interview
+ Write sample interview answers
+
+Just say the word.
