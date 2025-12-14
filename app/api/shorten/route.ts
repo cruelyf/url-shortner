@@ -22,7 +22,7 @@ export async function POST(req: NextRequest) {
       success: true,
       link: {
         ...link,
-        shortUrl: `${process.env.NEXT_PUBLIC_BASE_URL}/r/${link.slug}`,
+        shortUrl: `${process.env.NEXT_PUBLIC_BASE_URL}/api/r/${link.slug}`,
       },
     });
   } catch (err: unknown) {
