@@ -1,36 +1,212 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+# ✂️ URL Shortener
+
+A fast, full-featured URL shortener built with **Next.js 14**, **Redis**, and deployed on **Vercel**.
+
+---
+
+## Features
+
+- 🔗 **Instant URL shortening** — paste a long URL and get a short one in seconds
+- ✏️ **Custom slugs** — choose your own short link path (e.g. `/my-link`)
+- 📊 **Click analytics** — track how many times each link has been clicked
+- ⏱️ **Link expiration** — set an expiry date/time; expired links return a 410 Gone
+- 🔒 **Password protection** — secure links with a bcrypt-hashed password
+
+---
+
+## Tech Stack
+
+| Layer | Technology |
+|---|---|
+| Framework | Next.js 14 (App Router) |
+| Language | TypeScript |
+| Styling | Tailwind CSS |
+| Database | Redis (Upstash in production) |
+| Auth | bcryptjs (password hashing) |
+| ID generation | nanoid |
+| Deployment | Vercel |
+
+---
+
+## Project Structure
+
+```
+src/
+├── app/
+│   ├── api/
+│   │   ├── shorten/
+│   │   │   └── route.ts        # POST  — create a short link
+│   │   ├── r/[slug]/
+│   │   │   └── route.ts        # GET   — redirect + count click
+│   │   └── links/[slug]/
+│   │       └── route.ts        # GET   — fetch link stats
+│   ├── globals.css
+│   ├── layout.tsx
+│   └── page.tsx                # Main UI
+├── components/
+│   ├── ShortenForm.tsx          # URL input form
+│   ├── ResultCard.tsx           # Short link result display
+│   └── StatsCard.tsx            # Analytics lookup
+└── lib/
+    ├── redis.ts                 # Redis client
+    └── links.ts                 # Data helpers (create, get, increment, verify)
+```
+
+---
 
 ## Getting Started
 
-First, run the development server:
+### Prerequisites
+
+- Node.js 18+
+- A Redis instance (local or [Upstash](https://upstash.com))
+- [Vercel CLI](https://vercel.com/docs/cli) (for deployment)
+
+### Local Development
 
 ```bash
+# 1. Clone the repo
+git clone https://github.com/your-username/url-shortener.git
+cd url-shortener
+
+# 2. Install dependencies
+npm install
+
+# 3. Set up environment variables
+cp .env.example .env.local
+# Fill in your REDIS_URL and NEXT_PUBLIC_BASE_URL
+
+# 4. Start the dev server
 npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
 ```
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+Open [http://localhost:3000](http://localhost:3000) in your browser.
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
+---
 
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
+## Environment Variables
 
-## Learn More
+Create a `.env.local` file at the root of the project:
 
-To learn more about Next.js, take a look at the following resources:
+```env
+REDIS_URL=redis://localhost:6379
+NEXT_PUBLIC_BASE_URL=http://localhost:3000
+```
 
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
+For production on Vercel, set these in **Project → Settings → Environment Variables**:
 
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
+```env
+REDIS_URL=rediss://default:your-password@your-endpoint.upstash.io:6379
+NEXT_PUBLIC_BASE_URL=https://your-app.vercel.app
+```
 
-## Deploy on Vercel
+---
 
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
+## API Reference
 
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+### `POST /api/shorten`
+
+Create a new short link.
+
+**Request body:**
+```json
+{
+  "url": "https://example.com/very-long-url",
+  "slug": "my-link",
+  "password": "secret123",
+  "expiresAt": "2026-12-31T23:59:59Z"
+}
+```
+> `slug`, `password`, and `expiresAt` are all optional.
+
+**Response:**
+```json
+{
+  "success": true,
+  "link": {
+    "url": "https://example.com/very-long-url",
+    "slug": "my-link",
+    "shortUrl": "https://your-app.vercel.app/r/my-link",
+    "clicks": 0,
+    "createdAt": "2026-03-17T10:00:00.000Z",
+    "expiresAt": "2026-12-31T23:59:59.000Z"
+  }
+}
+```
+
+---
+
+### `GET /api/r/[slug]`
+
+Redirect to the original URL and increment the click count.
+
+- Returns **302** redirect on success
+- Returns **401** if the link is password protected (pass password via `x-link-password` header)
+- Returns **404** if the slug doesn't exist
+- Returns **410** if the link has expired
+
+---
+
+### `GET /api/links/[slug]`
+
+Fetch stats for a short link.
+
+**Response:**
+```json
+{
+  "slug": "my-link",
+  "url": "https://example.com/very-long-url",
+  "shortUrl": "https://your-app.vercel.app/r/my-link",
+  "clicks": 42,
+  "createdAt": "2026-03-17T10:00:00.000Z",
+  "expiresAt": "2026-12-31T23:59:59.000Z",
+  "hasPassword": false,
+  "isExpired": false
+}
+```
+
+---
+
+## Deploying to Vercel
+
+```bash
+# 1. Push to GitHub
+git add .
+git commit -m "feat: url shortener"
+git push
+
+# 2. Link to Vercel
+vercel link
+
+# 3. Add environment variables
+vercel env add REDIS_URL
+vercel env add NEXT_PUBLIC_BASE_URL
+
+# 4. Deploy
+vercel --prod
+```
+
+---
+
+## Data Model
+
+Each link is stored as a Redis hash under the key `link:{slug}`:
+
+```
+link:my-link → {
+  url:       "https://example.com/..."
+  slug:      "my-link"
+  clicks:    "42"
+  createdAt: "2026-03-17T10:00:00Z"
+  expiresAt: "2026-12-31T23:59:59Z"   (optional)
+  password:  "$2b$10$..."              (optional, bcrypt hash)
+}
+```
+
+Links with an expiry date automatically get a Redis TTL set, so they are cleaned up from storage after expiration.
+
+---
+
+## License
+
+MIT
